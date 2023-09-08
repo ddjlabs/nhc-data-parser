@@ -1,5 +1,14 @@
+#Project-specific files
+zz-sample-data/*
+.vscode/*
+.venv/*
+*__pycache__*
+app/raw-files/*
+*.db
+app/config/*.conf
+
 # Byte-compiled / optimized / DLL files
-__pycache__/
+# __pycache__/
 *.py[cod]
 *$py.class
 
