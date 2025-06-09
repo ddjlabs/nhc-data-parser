@@ -1,0 +1,6 @@
+[
+  {"url": "https://www.nhc.noaa.gov/index-at.xml", "output": "nhc_atlantic_tropical_cyclones.md"},
+  {"url": "https://www.nhc.noaa.gov/xml/TWDAT.xml", "output": "nhc_tropical_weather_discussion_atlantic.md"},
+  {"url": "https://www.nhc.noaa.gov/gtwo.xml", "output": "nhc_graphical_outlook.md"},
+  {"url": "https://www.nhc.noaa.gov/xml/TWDEP.xml", "output": "nhc_tropical_weather_discussion_pacific.md"}
+]

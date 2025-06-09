@@ -1,14 +1,16 @@
-#Project-specific files
+# Project-specific files
 zz-sample-data/*
 .vscode/*
 .venv/*
+venv/
 *__pycache__*
 app/raw-files/*
 *.db
 app/config/*.conf
+data/*.db
 
-# Byte-compiled / optimized / DLL files
-# __pycache__/
+# Python
+__pycache__/
 *.py[cod]
 *$py.class
 
@@ -29,6 +31,7 @@ parts/
 sdist/
 var/
 wheels/
+<<<<<<< HEAD
 share/python-wheels/
 *.egg-info/
 .installed.cfg
@@ -167,3 +170,44 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+=======
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# Database
+*.db
+*.sqlite3
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+pipeline.log
+
+# Local development
+.env
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+
+/output/*
+/data/*
+>>>>>>> origin/develop
