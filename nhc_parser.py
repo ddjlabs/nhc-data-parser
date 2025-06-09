@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timezone
 from dateutil import parser as date_parser
 import pytz
 from typing import Dict, Optional, Tuple
@@ -47,13 +47,29 @@ def parse_datetime(dt_str: str) -> datetime:
     """Parse NHC datetime string to UTC datetime."""
     logger.debug(f"Parsing datetime from: {dt_str}")
     try:
+        # Define timezone information for common US timezones
+        tzinfos = {
+            'EDT': -4 * 3600,  # Eastern Daylight Time (UTC-4)
+            'EST': -5 * 3600,  # Eastern Standard Time (UTC-5)
+            'CDT': -5 * 3600,  # Central Daylight Time (UTC-5)
+            'CST': -6 * 3600,  # Central Standard Time (UTC-6)
+            'MDT': -6 * 3600,  # Mountain Daylight Time (UTC-6)
+            'MST': -7 * 3600,  # Mountain Standard Time (UTC-7)
+            'PDT': -7 * 3600,  # Pacific Daylight Time (UTC-7)
+            'PST': -8 * 3600,  # Pacific Standard Time (UTC-8)
+            'AKDT': -8 * 3600, # Alaska Daylight Time (UTC-8)
+            'AKST': -9 * 3600, # Alaska Standard Time (UTC-9)
+            'HDT': -9 * 3600,  # Hawaii-Aleutian Daylight Time (UTC-9)
+            'HST': -10 * 3600, # Hawaii-Aleutian Standard Time (UTC-10)
+        }
+        
         # Example format: "1100 AM EDT Sat Jun 10"
-        dt = date_parser.parse(dt_str, fuzzy=True)
+        dt = date_parser.parse(dt_str, fuzzy=True, tzinfos=tzinfos)
         logger.debug(f"Initial parsed datetime: {dt}")
         
         # If the year is not in the string, it will default to 1900
         if dt.year == 1900:
-            current_year = datetime.utcnow().year
+            current_year = datetime.now(timezone.utc).year
             dt = dt.replace(year=current_year)
             logger.debug(f"Updated year to current year: {dt}")
         
@@ -65,7 +81,7 @@ def parse_datetime(dt_str: str) -> datetime:
     except (ValueError, AttributeError) as e:
         logger.error(f"Error parsing datetime '{dt_str}': {str(e)}", exc_info=True)
         logger.warning(f"Returning current UTC time due to parse error")
-        return datetime.utcnow()
+        return datetime.now(timezone.utc)
 
 def get_storm_data(item) -> Optional[Dict]:
     """Extract storm data from RSS item."""

@@ -3,10 +3,10 @@ import logging.config
 import os
 import time
 import argparse
-from datetime import datetime
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
-from models import Storm, StormHistory, SessionLocal, init_db
+from models import Storm, StormHistory, SessionLocal, init_db, Region
 from nhc_parser import fetch_rss_feed, get_storm_data
 
 # Load environment variables from .env file
@@ -60,90 +60,84 @@ def configure_logging(log_level):
 
 logger = logging.getLogger(__name__)
 
-def update_storm_data(db: Session, storm_data: dict) -> Storm:
-    """Update or create storm record in database and track history when data changes."""
-    logger.debug(f"Updating storm data: {storm_data.get('storm_id')}")
+def update_storm_data(db: Session, storm_data: dict, region_id: int) -> Storm:
+    """Update or create storm data in the database.
     
-    # Ensure season is set to current year for new storms
-    if 'season' not in storm_data:
-        storm_data['season'] = datetime.utcnow().year
-        logger.debug(f"Set season to current year: {storm_data['season']}")
-    
-    # Check if storm already exists
-    storm = db.query(Storm).filter(Storm.storm_id == storm_data["storm_id"]).first()
-    
-    # Flag to determine if we need to create a history record
+    Args:
+        db: Database session
+        storm_data: Dictionary containing storm data
+        region_id: ID of the region this storm belongs to
+        
+    Returns:
+        Storm: Updated or created Storm object
+    """
+    storm_id = storm_data.get('storm_id')
+    if not storm_id:
+        logger.warning("Storm data missing storm_id, cannot update")
+        return None
+        
+    # Check if storm exists
+    storm = db.query(Storm).filter(Storm.storm_id == storm_id).first()
     create_history = False
     
-    if storm:
-        # Check if report_date has changed (this is the NHC datetime value)
-        report_date_changed = False
-        if 'report_date' in storm_data and storm.report_date != storm_data['report_date']:
-            report_date_changed = True
-            logger.debug(f"Report date changed for storm {storm.storm_name} ({storm.storm_id}): "
-                        f"{storm.report_date} -> {storm_data['report_date']}")
-        
-        # Update existing storm
-        updates = []
-        for key, value in storm_data.items():
-            if hasattr(storm, key) and getattr(storm, key) != value:
-                updates.append(f"{key}: {getattr(storm, key)} -> {value}")
-                setattr(storm, key, value)
-        storm.status = "active"
-        
-        if updates:
-            logger.debug(f"Updating storm {storm.storm_name} ({storm.storm_id}) with changes: {', '.join(updates)}")
-            logger.info(f"Updated storm: {storm.storm_name} ({storm.storm_id})")
-            # Only create history record if report_date has changed
-            create_history = report_date_changed
-        else:
-            logger.debug(f"No changes detected for storm {storm.storm_name} ({storm.storm_id})")
-            create_history = False
-    else:
-        # Create new storm
-        storm = Storm(**storm_data)
-        storm.status = "active"
-        db.add(storm)
-        logger.debug(f"Creating new storm: {storm.storm_name} ({storm.storm_id})")
-        logger.info(f"Added new storm: {storm.storm_name} ({storm.storm_id})")
-        # Always create history record for new storms
-        create_history = True
+    # Ensure season is set (use current year if not provided)
+    if 'season' not in storm_data or not storm_data['season']:
+        current_year = datetime.now(timezone.utc).year
+        storm_data['season'] = current_year
+        logger.debug(f"Set season to current year: {current_year}")
+    
+    # Set status to active since we found it in the feed
+    storm_data['status'] = "active"
     
     try:
-        # Commit the storm changes first
-        db.commit()
-        db.refresh(storm)
-        logger.debug(f"Successfully committed changes for storm {storm.storm_id}")
+        if storm:
+            logger.debug(f"Updating existing storm: {storm_id}")
+            
+            # Check if report_date has changed
+            if 'report_date' in storm_data and storm.report_date != storm_data['report_date']:
+                logger.debug(f"Report date changed for storm {storm_id}, creating history record")
+                create_history = True
+            
+            # Update storm fields
+            for key, value in storm_data.items():
+                if hasattr(storm, key):
+                    setattr(storm, key, value)
+            
+            storm.region_id = region_id  # Ensure region is set
+        else:
+            logger.debug(f"Creating new storm: {storm_id}")
+            storm_data['region_id'] = region_id  # Add region_id to storm data
+            storm = Storm(**storm_data)
+            db.add(storm)
+            create_history = True  # Always create history for new storms
         
         # Create history record if needed
         if create_history:
-            # Create a history record with the current storm data
-            history_data = storm.to_dict()
-            # Remove fields that don't belong in history
-            for field in ['id', 'created_at', 'updated_at']:
-                if field in history_data:
-                    del history_data[field]
+            logger.debug(f"Creating history record for storm {storm_id}")
+            history_data = storm_data.copy()
+            history_data['region_id'] = region_id  # Add region_id to history data
             
-            # Create the history record
-            history = StormHistory(**history_data)
-            db.add(history)
-            db.commit()
-            logger.debug(f"Created history record for storm {storm.storm_id}")
+            # Create history record with all the same data
+            history_record = StormHistory(**history_data)
+            db.add(history_record)
+            logger.debug(f"Created history record with status={history_data['status']}, season={history_data['season']}")
+        
+        db.commit()
+        return storm
     except Exception as e:
         db.rollback()
-        logger.error(f"Error committing storm {storm.storm_id}: {str(e)}", exc_info=True)
+        logger.error(f"Error updating storm data for {storm_id}: {str(e)}", exc_info=True)
         raise
-        
-    return storm
 
-def process_wallet_feed(db: Session, wallet_url: str):
-    """Process individual wallet feed for additional storm data."""
-    if not wallet_url:
-        logger.debug("No wallet URL provided, skipping wallet feed processing")
-        return
-        
+def process_wallet_feed(db: Session, wallet_url: str, region_id: int) -> None:
+    """Process a wallet-specific RSS feed to update storm data.
+    
+    Args:
+        db: Database session
+        wallet_url: URL to the wallet-specific RSS feed
+        region_id: ID of the region this wallet belongs to
+    """
     logger.info(f"Processing wallet feed: {wallet_url}")
-    logger.debug(f"Fetching wallet feed from URL: {wallet_url}")
     
     try:
         soup = fetch_rss_feed(wallet_url)
@@ -152,14 +146,14 @@ def process_wallet_feed(db: Session, wallet_url: str):
             return
             
         items = soup.find_all('item')
-        logger.debug(f"Found {len(items)} items in wallet feed: {wallet_url}")
+        logger.debug(f"Found {len(items)} items in wallet feed")
         
         for i, item in enumerate(items, 1):
             logger.debug(f"Processing item {i}/{len(items)} from wallet feed")
             storm_data = get_storm_data(item)
             if storm_data:
                 logger.debug(f"Updating storm data from wallet feed item {i}")
-                update_storm_data(db, storm_data)
+                update_storm_data(db, storm_data, region_id)
             else:
                 logger.debug(f"No storm data found in wallet feed item {i}")
                 
@@ -180,6 +174,53 @@ def parse_args():
     return parser.parse_args()
 
 
+def process_region(db: Session, region: Region) -> None:
+    """Process a specific hurricane region.
+    
+    Args:
+        db: Database session
+        region: Region object to process
+    """
+    logger.info(f"Processing region: {region.name} with feed: {region.rss_feed}")
+    
+    try:
+        # Fetch region's RSS feed
+        soup = fetch_rss_feed(region.rss_feed)
+        if not soup:
+            logger.error(f"Failed to fetch RSS feed for region {region.name} - no data returned")
+            return
+            
+        items = soup.find_all('item')
+        logger.info(f"Found {len(items)} items in {region.name} feed")
+        logger.debug(f"Processing {len(items)} items from {region.name} feed...")
+        
+        # Process each item in the feed
+        for i, item in enumerate(items, 1):
+            logger.debug(f"Processing item {i}/{len(items)} from {region.name} feed")
+            try:
+                storm_data = get_storm_data(item)
+                if storm_data:
+                    logger.debug(f"Updating storm data for item {i}")
+                    storm = update_storm_data(db, storm_data, region.id)
+                    
+                    # Process wallet feed if available
+                    if storm and storm.wallet_url:
+                        logger.debug(f"Processing wallet feed for storm {storm.storm_id}")
+                        process_wallet_feed(db, storm.wallet_url, region.id)
+                    else:
+                        logger.debug(f"No wallet URL for storm {storm.storm_id}")
+                else:
+                    logger.debug(f"No storm data found in item {i}")
+                    
+            except Exception as e:
+                logger.error(f"Error processing item {i} in region {region.name}: {str(e)}", exc_info=True)
+                continue  # Continue with next item on error
+    
+    except Exception as e:
+        logger.error(f"Error processing region {region.name}: {str(e)}", exc_info=True)
+        raise
+
+
 def main():
     """Main pipeline function to process NHC feed and update database."""
     # Parse command line arguments
@@ -189,10 +230,6 @@ def main():
     configure_logging(args.log_level)
     
     logger.info(f"Initializing NHC data pipeline with log level: {args.log_level}")
-    
-    # Initialize database
-    logger.debug("Initializing database...")
-    init_db()
     
     db = SessionLocal()
     logger.debug("Database session created")
@@ -206,41 +243,20 @@ def main():
         logger.debug(f"Marked {updated_count} existing storms as inactive")
         db.commit()
         
-        # Fetch main NHC RSS feed
-        main_feed_url = "https://www.nhc.noaa.gov/index-ep.xml"
-        logger.info(f"Fetching main feed: {main_feed_url}")
-        logger.debug("Initiating RSS feed fetch...")
+        # Get all active regions
+        active_regions = db.query(Region).filter(Region.active == True).all()
         
-        soup = fetch_rss_feed(main_feed_url)
-        if not soup:
-            logger.error("Failed to fetch main RSS feed - no data returned")
+        if not active_regions:
+            logger.warning("No active regions found in the database")
             return
-            
-        items = soup.find_all('item')
-        logger.info(f"Found {len(items)} items in main feed")
-        logger.debug(f"Processing {len(items)} items from main feed...")
         
-        # Process each item in the feed
-        for i, item in enumerate(items, 1):
-            logger.debug(f"Processing item {i}/{len(items)} from main feed")
-            try:
-                storm_data = get_storm_data(item)
-                if storm_data:
-                    logger.debug(f"Updating storm data for item {i}")
-                    storm = update_storm_data(db, storm_data)
-                    
-                    # Process wallet feed if available
-                    if storm and storm.wallet_url:
-                        logger.debug(f"Processing wallet feed for storm {storm.storm_id}")
-                        process_wallet_feed(db, storm.wallet_url)
-                    else:
-                        logger.debug(f"No wallet URL for storm {storm.storm_id}")
-                else:
-                    logger.debug(f"No storm data found in item {i}")
-                    
-            except Exception as e:
-                logger.error(f"Error processing item {i}: {str(e)}", exc_info=True)
-                continue  # Continue with next item on error
+        # Log active regions at INFO level
+        region_names = [region.name for region in active_regions]
+        logger.info(f"Processing {len(active_regions)} active regions: {', '.join(region_names)}")
+        
+        # Process each active region
+        for region in active_regions:
+            process_region(db, region)
         
         logger.info("Pipeline completed successfully")
         

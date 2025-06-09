@@ -5,7 +5,7 @@ from sqlalchemy import desc
 from typing import List, Optional
 from datetime import datetime
 import models
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # Create FastAPI app
 app = FastAPI(title="NHC Storm Tracker API")
@@ -20,8 +20,20 @@ app.add_middleware(
 )
 
 # Pydantic models for request/response
+class RegionBase(BaseModel):
+    id: int
+    name: str
+    rss_feed: str
+    active: bool
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
 class StormBase(BaseModel):
     id: int
+    region_id: int
     storm_id: str
     storm_name: str
     storm_type: str
@@ -46,6 +58,7 @@ class StormBase(BaseModel):
 
 class StormHistoryBase(BaseModel):
     id: int
+    region_id: int
     storm_id: str
     storm_name: str
     storm_type: str
@@ -77,6 +90,15 @@ class StormHistoryResponse(BaseModel):
     count: int
     data: List[StormHistoryBase]
 
+class RegionResponse(BaseModel):
+    success: bool
+    data: RegionBase
+
+class RegionsResponse(BaseModel):
+    success: bool
+    count: int
+    data: List[RegionBase]
+
 # Dependency to get DB session
 def get_db():
     db = models.SessionLocal()
@@ -92,18 +114,25 @@ async def root():
         "success": True,
         "message": "Welcome to the NHC Storm Tracker API",
         "endpoints": {
+            "/api/v1/regions": "Get all regions",
+            "/api/v1/regions/active": "Get all active regions",
+            "/api/v1/regions/{region_id}": "Get region by ID",
             "/api/v1/storms/active": "Get all active storms",
             "/api/v1/storms": "Get all storms with optional filters (status, season, type, min_wind_speed)",
             "/api/v1/storms/{storm_id}": "Get storm by ID",
             "/api/v1/storms/{storm_id}/history": "Get historical data for a specific storm",
-            "/api/v1/storms/name/{storm_name}": "Search storms by name"
+            "/api/v1/storms/name/{storm_name}": "Search storms by name",
+            "/api/v1/regions/{region_id}/storms": "Get all storms for a specific region"
         },
         "examples": {
+            "Get all regions": "/api/v1/regions",
+            "Get active regions": "/api/v1/regions/active",
             "Get active storms": "/api/v1/storms/active",
             "Get all storms from 2023": "/api/v1/storms?season=2023",
             "Get all hurricanes": "/api/v1/storms?storm_type=HURRICANE",
             "Get storms with wind speed > 100 MPH": "/api/v1/storms?min_wind_speed=100",
-            "Get history for a storm": "/api/v1/storms/EP022025/history"
+            "Get history for a storm": "/api/v1/storms/EP022025/history",
+            "Get storms for Eastern Pacific region": "/api/v1/regions/1/storms"
         }
     }
 
@@ -229,6 +258,88 @@ async def get_storm_history(
         "success": True,
         "count": len(history),
         "data": history
+    }
+
+# Region API Endpoints
+@app.get("/api/v1/regions", response_model=RegionsResponse, tags=["Regions"])
+async def get_all_regions(
+    db: Session = Depends(get_db)
+):
+    """Get all regions"""
+    regions = db.query(models.Region).order_by(models.Region.name).all()
+    total = len(regions)
+    
+    return {
+        "success": True,
+        "count": total,
+        "data": regions
+    }
+
+@app.get("/api/v1/regions/active", response_model=RegionsResponse, tags=["Regions"])
+async def get_active_regions(
+    db: Session = Depends(get_db)
+):
+    """Get all active regions"""
+    regions = db.query(models.Region).filter(models.Region.active == True).order_by(models.Region.name).all()
+    total = len(regions)
+    
+    return {
+        "success": True,
+        "count": total,
+        "data": regions
+    }
+
+@app.get("/api/v1/regions/{region_id}", response_model=RegionResponse, tags=["Regions"])
+async def get_region_by_id(
+    region_id: int,
+    db: Session = Depends(get_db)
+):
+    """Get region by ID"""
+    region = db.query(models.Region).filter(models.Region.id == region_id).first()
+    if not region:
+        raise HTTPException(status_code=404, detail="Region not found")
+    
+    return {
+        "success": True,
+        "data": region
+    }
+
+@app.get("/api/v1/regions/{region_id}/storms", response_model=StormsResponse, tags=["Regions"])
+async def get_storms_by_region(
+    region_id: int,
+    db: Session = Depends(get_db),
+    status: Optional[str] = None,
+    season: Optional[int] = None,
+    limit: int = Query(100, ge=1, le=1000, description="Number of records to return"),
+    offset: int = Query(0, ge=0, description="Offset for pagination")
+):
+    """Get all storms for a specific region"""
+    # Verify region exists
+    region = db.query(models.Region).filter(models.Region.id == region_id).first()
+    if not region:
+        raise HTTPException(status_code=404, detail="Region not found")
+    
+    # Build query for storms in this region
+    query = db.query(models.Storm).filter(models.Storm.region_id == region_id)
+    
+    # Apply filters if provided
+    if status:
+        query = query.filter(models.Storm.status == status)
+    
+    # Filter by season if provided, otherwise use current year
+    if season:
+        query = query.filter(models.Storm.season == season)
+    
+    total = query.count()
+    storms = query.order_by(models.Storm.updated_at.desc())\
+                    .offset(offset)\
+                    .limit(limit)\
+                    .all()
+    
+    return {
+        "success": True,
+        "count": total,
+        "data": storms
     }
 
 if __name__ == "__main__":

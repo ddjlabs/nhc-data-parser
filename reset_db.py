@@ -1,6 +1,9 @@
 import logging
+import json
+import os
 from sqlalchemy import text
-from models import Base, engine, SessionLocal
+from datetime import datetime
+from models import Base, engine, SessionLocal, Region, load_regions_from_json, update_existing_storms_region
 
 # Configure logging
 logging.basicConfig(
@@ -24,7 +27,34 @@ def reset_database():
     Base.metadata.create_all(engine)
     logger.info("Tables recreated successfully")
     
+    # Load regions from config file
+    logger.info("Loading regions from config file...")
+    db = SessionLocal()
+    try:
+        # Load regions from config/regions.json
+        config_path = os.path.join("config", "regions.json")
+        if os.path.exists(config_path):
+            # Call load_regions_from_json with just the db session
+            load_regions_from_json(db)
+            
+            # Query and log the loaded regions
+            regions = db.query(Region).all()
+            logger.info(f"Loaded {len(regions)} regions from config file")
+            for region in regions:
+                logger.info(f"  - {region.name} ({'active' if region.active else 'inactive'})")
+        else:
+            logger.warning(f"Config file not found: {config_path}")
+        
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error loading regions: {str(e)}")
+        raise
+    finally:
+        db.close()
+    
     logger.info("Database reset complete")
 
 if __name__ == "__main__":
     reset_database()
+    logger.info("Database has been reset and initialized with region data")
