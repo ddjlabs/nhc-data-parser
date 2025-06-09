@@ -32,7 +32,8 @@ def reset_database():
     db = SessionLocal()
     try:
         # Load regions from config/regions.json
-        config_path = os.path.join("config", "regions.json")
+        config_dir = os.environ.get("CONFIG_DIR", "config")
+        config_path = os.path.join(config_dir, "regions.json")
         if os.path.exists(config_path):
             # Call load_regions_from_json with just the db session
             load_regions_from_json(db)

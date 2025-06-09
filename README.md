@@ -24,6 +24,8 @@ A Python-based data pipeline and REST API for tracking active hurricanes and tro
 
 ## Installation
 
+### Standard Installation
+
 1. Clone the repository:
    ```bash
    git clone <repository-url>
@@ -40,6 +42,27 @@ A Python-based data pipeline and REST API for tracking active hurricanes and tro
    ```bash
    pip install -r requirements.txt
    ```
+
+### Docker Installation
+
+Alternatively, you can use Docker to run the application in containers:
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd nhc-rest-api
+   ```
+
+2. Build and start the containers:
+   ```bash
+   docker-compose up -d
+   ```
+
+This will start two containers:
+- API service on port 8000
+- Pipeline service running on the configured schedule
+
+See [DOCKER.md](DOCKER.md) for detailed instructions on Docker deployment.
 
 ## Usage
 

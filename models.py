@@ -11,10 +11,12 @@ import os
 logger = logging.getLogger(__name__)
 
 # Database setup
-DATA_DIR = "data"
+DATA_DIR = os.environ.get("DATA_DIR", "data")
 os.makedirs(DATA_DIR, exist_ok=True)  # Ensure data directory exists
 DB_FILENAME = os.path.join(DATA_DIR, "nhc_tracker.db")
-SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_FILENAME}"
+
+# Allow database URL to be configured via environment variable
+SQLALCHEMY_DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{DB_FILENAME}")
 
 def get_engine():
     """Create and configure the SQLAlchemy engine with logging."""
@@ -161,7 +163,7 @@ class StormHistory(Base):
 # Create tables
 def load_regions_from_json(db: SessionType):
     """Load regions from the config/regions.json file into the database."""
-    config_dir = "config"
+    config_dir = os.environ.get("CONFIG_DIR", "config")
     regions_file = os.path.join(config_dir, "regions.json")
     
     if not os.path.exists(regions_file):
