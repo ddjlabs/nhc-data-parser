@@ -1,0 +1,5 @@
+[
+    {"region": "Atlantic", "RSSfeed": "https://www.nhc.noaa.gov/index-at.xml", "active": true},
+    {"region": "Central Pacific", "RSSfeed": "https://www.nhc.noaa.gov/index-cp.xml", "active": true},
+    {"region": "Eastern Pacific", "RSSfeed": "https://www.nhc.noaa.gov/index-ep.xml", "active": true}
+]
