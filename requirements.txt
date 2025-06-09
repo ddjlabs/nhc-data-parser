@@ -7,3 +7,5 @@ SQLAlchemy>=2.0.20
 fastapi>=0.100.0
 uvicorn>=0.23.2
 pydantic>=2.3.0
+python-dotenv>=1.0.0
+croniter>=2.0.1

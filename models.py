@@ -104,6 +104,32 @@ class Storm(Base):
         """Convert model instance to dictionary."""
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
+
+class StormHistory(Base):
+    __tablename__ = "storm_history"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    storm_id = Column(String, index=True, comment="Unique storm identifier from NHC")
+    season = Column(Integer, index=True, comment="Storm season (year)")
+    storm_name = Column(String, comment="Name of the storm")
+    storm_type = Column(String, comment="Type of storm (e.g., Hurricane, Tropical Storm)")
+    latitude = Column(Float, comment="Latitude of storm center")
+    longitude = Column(Float, comment="Longitude of storm center")
+    movement = Column(String, comment="Movement direction and speed")
+    wind_speed = Column(Integer, comment="Maximum sustained wind speed in MPH")
+    pressure = Column(Integer, comment="Minimum central pressure in mb")
+    headline = Column(String, comment="Headline/most important information")
+    report = Column(String, comment="Full report/description from RSS")
+    report_link = Column(String, comment="URL to the full report")
+    report_date = Column(DateTime, comment="Date/time when the report was published")
+    wallet = Column(String, comment="NHC wallet identifier")
+    wallet_url = Column(String, comment="URL to the wallet-specific RSS feed")
+    status = Column(String, comment="Status (active/inactive)")
+    recorded_at = Column(DateTime, default=datetime.utcnow, comment="When this history record was created")
+    
+    def __repr__(self) -> str:
+        return f"<StormHistory(id={self.id}, storm_id='{self.storm_id}', recorded_at='{self.recorded_at}')>"
+
 # Create tables
 def init_db():
     """Initialize the database by creating all tables."""

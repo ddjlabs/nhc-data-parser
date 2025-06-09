@@ -4,10 +4,12 @@ A Python-based data pipeline and REST API for tracking active hurricanes and tro
 
 ## Features
 
-- Fetches real-time storm data from NHC RSS feeds
-- Stores storm tracking information in a SQLite database
-- Provides a RESTful API to query storm data
-- Tracks storm history and status
+- Fetches and parses NHC RSS feeds for active storms
+- Stores storm data in SQLite database
+- Tracks storm history over time in a dedicated history table
+- Provides a REST API for accessing storm data
+- Scheduled pipeline execution using cron expressions
+- Includes utilities for database management and debugging
 - Supports filtering by storm name, ID, status, and season
 - Robust XML parsing with namespace handling
 - Comprehensive logging for debugging and monitoring
@@ -53,15 +55,40 @@ To apply database migrations (e.g., adding the season field):
 python migrations.py
 ```
 
-### Running the Data Pipeline
-
-To fetch the latest storm data and update the database:
+### Running the Pipeline
 
 ```bash
 python pipeline.py
 ```
 
-### Running the API Server
+This will fetch the latest storm data from NHC and update the database.
+
+### Running the Scheduled Pipeline
+
+```bash
+python scheduler.py
+```
+
+This will run the pipeline on a schedule defined in the `.env` file. The schedule is specified using cron syntax.
+
+### Configuration
+
+Copy the `.env.example` file to `.env` and adjust the settings:
+
+```bash
+cp .env.example .env
+```
+
+Edit the `.env` file to set your preferred schedule:
+
+```
+# Run every hour at minute 0
+CRON_SCHEDULE=0 */1 * * *
+```
+
+### Storm History Tracking
+
+The system now automatically tracks the history of storm data changes. Each time a storm's data is updated, a new record is added to the `storm_history` table, allowing you to track how storms evolve over time.
 
 To start the FastAPI server:
 

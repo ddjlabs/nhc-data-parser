@@ -1,6 +1,6 @@
 @echo off
 echo Creating Python virtual environment...
-python -m venv venv
+python -m venv .venv
 
 if %ERRORLEVEL% NEQ 0 (
     echo Failed to create virtual environment
@@ -8,7 +8,7 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo Activating virtual environment...
-call venv\Scripts\activate
+call .venv\Scripts\activate
 
 if %ERRORLEVEL% NEQ 0 (
     echo Failed to activate virtual environment
