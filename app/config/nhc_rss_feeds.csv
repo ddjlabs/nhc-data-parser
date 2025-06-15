@@ -1,0 +1,46 @@
+#feed_name,feed_category,feed_url,feed_file_name,active_yn
+Graphical Tropical Weather Outlooks,Outlook,https://www.nhc.noaa.gov/gtwo.xml,GTWO,Y
+NHC Atlantic,Outlook,https://www.nhc.noaa.gov/index-at.xml,index-at,Y
+NHC Atlantic Wallet 1,storm wallet,https://www.nhc.noaa.gov/nhc_at1.xml,nhc_at1,Y
+NHC Atlantic Wallet 2,storm wallet,https://www.nhc.noaa.gov/nhc_at2.xml,nhc_at2,Y
+NHC Atlantic Wallet 3,storm wallet,https://www.nhc.noaa.gov/nhc_at3.xml,nhc_at3,Y
+NHC Atlantic Wallet 4,storm wallet,https://www.nhc.noaa.gov/nhc_at4.xml,nhc_at4,Y
+NHC Atlantic Wallet 5,storm wallet,https://www.nhc.noaa.gov/nhc_at5.xml,nhc_at5,Y
+NHC Tropical Weather Discussion (Atlantic),Discussion,https://www.nhc.noaa.gov/xml/TWDAT.xml,TWDAT,Y
+Atlantic Tropical Cyclone Public Advisory Wallet 1,public advisory,https://www.nhc.noaa.gov/xml/TCPAT1.xml,TCPAT1,Y
+Atlantic Tropical Cyclone Public Advisory Wallet 2,public advisory,https://www.nhc.noaa.gov/xml/TCPAT2.xml,TCPAT2,Y
+Atlantic Tropical Cyclone Public Advisory Wallet 3,public advisory,https://www.nhc.noaa.gov/xml/TCPAT3.xml,TCPAT3,Y
+Atlantic Tropical Cyclone Public Advisory Wallet 4,public advisory,https://www.nhc.noaa.gov/xml/TCPAT4.xml,TCPAT4,Y
+Atlantic Tropical Cyclone Public Advisory Wallet 5,public advisory,https://www.nhc.noaa.gov/xml/TCPAT5.xml,TCPAT5,Y
+Atlantic Tropical Cyclone Forecast Advisory Wallet 1,Forecast Advisory, https://www.nhc.noaa.gov/xml/TCMAT1.xml,TCMAT1,Y
+Atlantic Tropical Cyclone Forecast Advisory Wallet 2,Forecast Advisory, https://www.nhc.noaa.gov/xml/TCMAT2.xml,TCMAT1,Y
+Atlantic Tropical Cyclone Forecast Advisory Wallet 3,Forecast Advisory, https://www.nhc.noaa.gov/xml/TCMAT3.xml,TCMAT1,Y
+Atlantic Tropical Cyclone Forecast Advisory Wallet 4,Forecast Advisory, https://www.nhc.noaa.gov/xml/TCMAT4.xml,TCMAT1,Y
+Atlantic Tropical Cyclone Forecast Advisory Wallet 5,Forecast Advisory, https://www.nhc.noaa.gov/xml/TCMAT5.xml,TCMAT1,Y
+Atlantic Discussion Wallet 1,Discussion,https://www.nhc.noaa.gov/xml/TCDAT1.xml,TCDAT1,Y
+Atlantic Discussion Wallet 2,Discussion,https://www.nhc.noaa.gov/xml/TCDAT2.xml,TCDAT2,Y
+Atlantic Discussion Wallet 3,Discussion,https://www.nhc.noaa.gov/xml/TCDAT3.xml,TCDAT3,Y
+Atlantic Discussion Wallet 4,Discussion,https://www.nhc.noaa.gov/xml/TCDAT4.xml,TCDAT4,Y
+Atlantic Discussion Wallet 5,Discussion,https://www.nhc.noaa.gov/xml/TCDAT5.xml,TCDAT5,Y
+Atlantic Wind Speed Probabilities Wallet 1,Wind Speed Probabilities,https://www.nhc.noaa.gov/xml/PWSAT1.xml,PWSAT1,Y
+Atlantic Wind Speed Probabilities Wallet 2,Wind Speed Probabilities,https://www.nhc.noaa.gov/xml/PWSAT2.xml,PWSAT2,Y
+Atlantic Wind Speed Probabilities Wallet 3,Wind Speed Probabilities,https://www.nhc.noaa.gov/xml/PWSAT3.xml,PWSAT3,Y
+Atlantic Wind Speed Probabilities Wallet 4,Wind Speed Probabilities,https://www.nhc.noaa.gov/xml/PWSAT4.xml,PWSAT4,Y
+Atlantic Wind Speed Probabilities Wallet 5,Wind Speed Probabilities,https://www.nhc.noaa.gov/xml/PWSAT5.xml,PWSAT5,Y
+Atlantic ICAO (Aviation) Advisory Wallet 1,Aviation Advisory,https://www.nhc.noaa.gov/xml/TCANT1.xml,TCANT1,Y
+Atlantic ICAO (Aviation) Advisory Wallet 2,Aviation Advisory,https://www.nhc.noaa.gov/xml/TCANT2.xml,TCANT1,Y
+Atlantic ICAO (Aviation) Advisory Wallet 3,Aviation Advisory,https://www.nhc.noaa.gov/xml/TCANT3.xml,TCANT1,Y
+Atlantic ICAO (Aviation) Advisory Wallet 4,Aviation Advisory,https://www.nhc.noaa.gov/xml/TCANT4.xml,TCANT1,Y
+Atlantic ICAO (Aviation) Advisory Wallet 5,Aviation Advisory,https://www.nhc.noaa.gov/xml/TCANT5.xml,TCANT1,Y
+Atlantic Tropical Cyclone Update Wallet 1,Tropical Cyclone Update,https://www.nhc.noaa.gov/xml/TCUAT1.xml,TCUAT1,Y
+Atlantic Tropical Cyclone Update Wallet 2,Tropical Cyclone Update,https://www.nhc.noaa.gov/xml/TCUAT2.xml,TCUAT2,Y
+Atlantic Tropical Cyclone Update Wallet 3,Tropical Cyclone Update,https://www.nhc.noaa.gov/xml/TCUAT3.xml,TCUAT3,Y
+Atlantic Tropical Cyclone Update Wallet 4,Tropical Cyclone Update,https://www.nhc.noaa.gov/xml/TCUAT4.xml,TCUAT4,Y
+Atlantic Tropical Cyclone Update Wallet 5,Tropical Cyclone Update,https://www.nhc.noaa.gov/xml/TCUAT5.xml,TCUAT5,Y
+Atlantic Tropical Cyclone Breakpoints Wallet 1,Tropical Cyclone Breakpoints,https://www.nhc.noaa.gov/xml/TCVAT1.xml,TCVAT1,Y
+Atlantic Tropical Cyclone Breakpoints Wallet 2,Tropical Cyclone Breakpoints,https://www.nhc.noaa.gov/xml/TCVAT2.xml,TCVAT2,Y
+Atlantic Tropical Cyclone Breakpoints Wallet 3,Tropical Cyclone Breakpoints,https://www.nhc.noaa.gov/xml/TCVAT3.xml,TCVAT3,Y
+Atlantic Tropical Cyclone Breakpoints Wallet 4,Tropical Cyclone Breakpoints,https://www.nhc.noaa.gov/xml/TCVAT4.xml,TCVAT4,Y
+Atlantic Tropical Cyclone Breakpoints Wallet 5,Tropical Cyclone Breakpoints,https://www.nhc.noaa.gov/xml/TCVAT5.xml,TCVAT5,Y
+#Disabled Feeds
+Gulf of Mexico Offshore Waters Forecast,waters forecast,https://www.nhc.noaa.gov/xml/OFFNT4.xml,OFFNT4,N

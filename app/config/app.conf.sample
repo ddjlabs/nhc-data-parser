@@ -1,0 +1,24 @@
+#National Hurricane Center WeeWX API Configuration File
+#Last Update: 06/15/2021
+
+#Database connection information. This was developed using SQLite
+
+[DB]
+#DBType=sqlite
+DBType = mariadb  #mariadb or sqlite
+database_filepath = nhc_data.db
+mariadb_connection_string = mariadb+mariadbconnector://<USER>:<PASSWORD>@<HOST>/nhc_data
+rss_feed_data=nhc_rss_feeds.csv
+
+
+#Test Mode. Enable Testing (Y/N) means to use the sample RSS feeds provided by NHC (Y)
+[TESTMODE]
+enable_testing = Y
+use_sample_data = N
+seed_sample_data=nhc_rss_feed_samples.csv
+
+[DATAPULLER]
+check_interval_min = 60
+raw_files_location = raw-files
+#debugging purposes
+#raw_files_location = app/raw-files

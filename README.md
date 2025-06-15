@@ -2,6 +2,14 @@
 
 A Python-based data pipeline and REST API for tracking active hurricanes and tropical storms using data from the National Hurricane Center (NHC) across multiple regions.
 
+## Purpose
+This program downloads RSS feeds from the National Hurricane Center's RSS library, parses the data, and stores it in a database. It can be used for weather tracking applications, including integration with WeeWX Weather Station systems.
+
+## History
+* Initially created under the NHC-TROPICS-API project
+* Expanded to support multiple hurricane regions
+* Added Docker support for containerized deployment
+
 ## Features
 
 - Multi-region support for tracking storms in Atlantic, Eastern Pacific, and Central Pacific
@@ -260,3 +268,4 @@ This project is open source and available under the [MIT License](LICENSE).
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+>>>>>>> origin/develop

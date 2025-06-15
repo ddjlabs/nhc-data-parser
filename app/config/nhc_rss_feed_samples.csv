@@ -1,0 +1,9 @@
+﻿#feed_name,feed_category,feed_url,feed_file_name,active_yn
+Atlantic Basin - offseason,sample,https://www.nhc.noaa.gov/rss_examples/index-at.xml,index-at-sample-offseason,Y
+Atlantic Basin - active storm,sample,https://www.nhc.noaa.gov/rss_examples/index-at-20130605.xml,index-at-sample-activestorms,Y
+Atlantic Basin GIS Data - active,sample,https://www.nhc.noaa.gov/rss_examples/gis-at.xml,gis-at-sample,Y
+Atlantic Wallet 1 - TS Andrea,sample,https://www.nhc.noaa.gov/rss_examples/nhc_at1.xml,at-sample-wallet1-activestorm,Y
+Atlantic Wallet 2 - no current storm,sample,https://www.nhc.noaa.gov/rss_examples/nhc_at2.xml,at-sample-wallet2,Y
+Atlantic Wallet 3 - no current storm,sample,https://www.nhc.noaa.gov/rss_examples/nhc_at3.xml,at-sample-wallet3,Y
+Atlantic Wallet 4 - no current storm,sample,https://www.nhc.noaa.gov/rss_examples/nhc_at4.xml,at-sample-wallet4,Y
+Atlantic Wallet 5 - no current storm,sample,https://www.nhc.noaa.gov/rss_examples/nhc_at5.xml,at-sample-wallet5,Y
