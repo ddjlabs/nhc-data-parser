@@ -158,13 +158,21 @@ Once the server is running, you can access the interactive API documentation at:
   - `status` - Filter by storm status (active/inactive)
   - `storm_type` - Filter by storm type (e.g., HURRICANE, TROPICAL STORM)
   - `min_wind_speed` - Filter by minimum wind speed in MPH
+  - `max_wind_speed` - Filter by maximum wind speed in MPH
   - `region_id` - Filter by region ID
+  - `min_pressure` - Filter by minimum pressure in mb
+  - `max_pressure` - Filter by maximum pressure in mb
+  - `start_date` - Only storms reported after this ISO date
+  - `end_date` - Only storms reported before this ISO date
+  - `sort_by` - Field to sort by (e.g., `report_date`)
+  - `sort_dir` - Sort direction (`asc` or `desc`)
 - `GET /api/v1/storms/{storm_id}` - Get storm by ID
 - `GET /api/v1/storms/name/{storm_name}` - Search storms by name
 - `GET /api/v1/regions` - Get all regions
 - `GET /api/v1/regions/active` - Get all active regions
 - `GET /api/v1/regions/{region_id}` - Get region by ID
 - `GET /api/v1/regions/{region_id}/storms` - Get all storms for a specific region
+  - Supports the same filter parameters as `GET /api/v1/storms`
 
 ### Setting Up a Scheduled Task (Optional)
 
