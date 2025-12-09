@@ -118,7 +118,7 @@ async def root():
             "/api/v1/regions/active": "Get all active regions",
             "/api/v1/regions/{region_id}": "Get region by ID",
             "/api/v1/storms/active": "Get all active storms",
-            "/api/v1/storms": "Get all storms with optional filters (status, season, type, min_wind_speed)",
+            "/api/v1/storms": "Get all storms with optional filters (status, season, type, region_id, wind/pressure, dates)",
             "/api/v1/storms/{storm_id}": "Get storm by ID",
             "/api/v1/storms/{storm_id}/history": "Get historical data for a specific storm",
             "/api/v1/storms/name/{storm_name}": "Search storms by name",
@@ -131,6 +131,8 @@ async def root():
             "Get all storms from 2023": "/api/v1/storms?season=2023",
             "Get all hurricanes": "/api/v1/storms?storm_type=HURRICANE",
             "Get storms with wind speed > 100 MPH": "/api/v1/storms?min_wind_speed=100",
+            "Get storms with pressure < 980 mb": "/api/v1/storms?max_pressure=980",
+            "Get storms between dates": "/api/v1/storms?start_date=2023-08-01&end_date=2023-08-31",
             "Get history for a storm": "/api/v1/storms/EP022025/history",
             "Get storms for Eastern Pacific region": "/api/v1/regions/1/storms"
         }
@@ -159,11 +161,19 @@ async def get_all_storms(
     status: Optional[str] = None,
     season: Optional[int] = None,
     storm_type: Optional[str] = None,
+    region_id: Optional[int] = None,
     min_wind_speed: Optional[int] = None,
+    max_wind_speed: Optional[int] = None,
+    min_pressure: Optional[int] = None,
+    max_pressure: Optional[int] = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+    sort_by: str = Query("updated_at", description="Field to sort by"),
+    sort_dir: str = Query("desc", description="Sort direction (asc or desc)"),
     limit: int = Query(100, ge=1, le=1000, description="Number of records to return"),
     offset: int = Query(0, ge=0, description="Number of records to skip")
 ):
-    """Get all storms with optional filters for status, season, type, and wind speed"""
+    """Get all storms with extensive filtering options"""
     query = db.query(models.Storm)
     
     # Apply filters if provided
@@ -180,13 +190,37 @@ async def get_all_storms(
     # Additional filters
     if storm_type:
         query = query.filter(models.Storm.storm_type.ilike(f"%{storm_type}%"))
-    
+
     if min_wind_speed:
         query = query.filter(models.Storm.wind_speed >= min_wind_speed)
-    
+
+    if max_wind_speed:
+        query = query.filter(models.Storm.wind_speed <= max_wind_speed)
+
+    if region_id:
+        query = query.filter(models.Storm.region_id == region_id)
+
+    if min_pressure:
+        query = query.filter(models.Storm.pressure >= min_pressure)
+
+    if max_pressure:
+        query = query.filter(models.Storm.pressure <= max_pressure)
+
+    if start_date:
+        query = query.filter(models.Storm.report_date >= start_date)
+
+    if end_date:
+        query = query.filter(models.Storm.report_date <= end_date)
+
     total = query.count()
-    storms = query.order_by(models.Storm.updated_at.desc())\
-                    .offset(offset)\
+
+    sort_column = getattr(models.Storm, sort_by, models.Storm.updated_at)
+    if sort_dir.lower() == "asc":
+        query = query.order_by(sort_column.asc())
+    else:
+        query = query.order_by(sort_column.desc())
+
+    storms = query.offset(offset)\
                     .limit(limit)\
                     .all()
     
@@ -310,6 +344,15 @@ async def get_storms_by_region(
     db: Session = Depends(get_db),
     status: Optional[str] = None,
     season: Optional[int] = None,
+    storm_type: Optional[str] = None,
+    min_wind_speed: Optional[int] = None,
+    max_wind_speed: Optional[int] = None,
+    min_pressure: Optional[int] = None,
+    max_pressure: Optional[int] = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+    sort_by: str = Query("updated_at", description="Field to sort by"),
+    sort_dir: str = Query("desc", description="Sort direction (asc or desc)"),
     limit: int = Query(100, ge=1, le=1000, description="Number of records to return"),
     offset: int = Query(0, ge=0, description="Offset for pagination")
 ):
@@ -321,18 +364,44 @@ async def get_storms_by_region(
     
     # Build query for storms in this region
     query = db.query(models.Storm).filter(models.Storm.region_id == region_id)
-    
+
     # Apply filters if provided
     if status:
         query = query.filter(models.Storm.status == status)
-    
-    # Filter by season if provided, otherwise use current year
+
     if season:
         query = query.filter(models.Storm.season == season)
-    
+
+    if storm_type:
+        query = query.filter(models.Storm.storm_type.ilike(f"%{storm_type}%"))
+
+    if min_wind_speed:
+        query = query.filter(models.Storm.wind_speed >= min_wind_speed)
+
+    if max_wind_speed:
+        query = query.filter(models.Storm.wind_speed <= max_wind_speed)
+
+    if min_pressure:
+        query = query.filter(models.Storm.pressure >= min_pressure)
+
+    if max_pressure:
+        query = query.filter(models.Storm.pressure <= max_pressure)
+
+    if start_date:
+        query = query.filter(models.Storm.report_date >= start_date)
+
+    if end_date:
+        query = query.filter(models.Storm.report_date <= end_date)
+
     total = query.count()
-    storms = query.order_by(models.Storm.updated_at.desc())\
-                    .offset(offset)\
+
+    sort_column = getattr(models.Storm, sort_by, models.Storm.updated_at)
+    if sort_dir.lower() == "asc":
+        query = query.order_by(sort_column.asc())
+    else:
+        query = query.order_by(sort_column.desc())
+
+    storms = query.offset(offset)\
                     .limit(limit)\
                     .all()
     
